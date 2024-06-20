@@ -10,6 +10,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from conversation import test_bot
 from evaluator import evaluate_response
+from singleMessage import single_message_test_bot
 from bson import ObjectId
 
 
@@ -112,6 +113,39 @@ def results():
     # Convert from Cursor to a list of dicts
     conversations_list = [conv for conv in conversations]
     return render_template('conversations.html', conversations=conversations_list)
+
+
+@app.route('/singleTest', methods=['GET', 'POST'])
+def singleTest():
+    if request.method == 'POST':
+        agent_name = request.form['agent_name']
+        uri = f'wss://hoomanlabs.com/api/sockets/chat?agentId={agent_name}'
+        test_count = int(request.form['test_count'])
+        input_message = request.form['input_message']
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        results = loop.run_until_complete(
+            single_message_test_bot(uri, test_count, input_message))
+        loop.close()
+
+        # Prepare the document to insert into MongoDB
+        document = {
+            "agent_name": agent_name,
+            "input_message": input_message,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "conversations": results  # All results are stored under one array
+        }
+
+        # Insert the document into MongoDB
+        insert_result = mongo.db.single_conversation.insert_one(document)
+
+        # Optionally, pass the ID of the inserted document to the template
+        document_id = insert_result.inserted_id
+
+        return render_template('result_single.html', results=results, document_id=document_id)
+
+    return render_template('singleTest.html')
 
 
 if __name__ == '__main__':

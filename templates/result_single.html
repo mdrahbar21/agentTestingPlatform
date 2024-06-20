@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Results</title>
+  </head>
+  <body>
+    <h1>Test Results</h1>
+    {% if results %}
+    <div>
+      <h2>
+        Test conducted by {{ results[0].agent_name }} at {{ results[0].timestamp
+        }}
+      </h2>
+      {% for conversation in results[0].conversations %}
+      <ul>
+        {% for message in conversation.conversation %}
+        <li><strong>{{ message.role }}:</strong> {{ message.content }}</li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p>No results to display.</p>
+    {% endif %}
+    <a href="/singleTest">Run Another Test</a>
+  </body>
+</html>

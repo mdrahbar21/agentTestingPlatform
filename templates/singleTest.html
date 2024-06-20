@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Single Test</title>
+  </head>
+  <body>
+    <h1>Run Single Message Test</h1>
+    <form method="POST" action="/singleTest">
+      <label for="agent_name">Agent Name:</label>
+      <input type="text" id="agent_name" name="agent_name" required /><br />
+      <label for="test_count">Number of Tests:</label>
+      <input type="number" id="test_count" name="test_count" required /><br />
+      <label for="input_message">Input Message:</label>
+      <input
+        type="text"
+        id="input_message"
+        name="input_message"
+        required
+      /><br />
+      <button type="submit">Start Test</button>
+    </form>
+  </body>
+</html>

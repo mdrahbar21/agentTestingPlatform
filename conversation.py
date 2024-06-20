@@ -58,7 +58,7 @@ async def test_bot(uri, n, user_prompt):
 
     for i in range(n):
         chat_history = [{'role': 'system', 'content': user_prompt}]
-        conversation = []
+        conversation = [{'role': 'system', 'content': user_prompt}]
         num = 0
         try:
             async with websockets.connect(uri, timeout=10) as websocket:
@@ -71,7 +71,7 @@ async def test_bot(uri, n, user_prompt):
                 chat_history.append(
                     {"role": "user", "content": user_message["full"]})
                 conversation.append(
-                    {"customer support agent": user_message["full"]})
+                    {"role": "agent", "content": user_message["log"]})
 
                 assistant_response = ''
 
@@ -81,7 +81,7 @@ async def test_bot(uri, n, user_prompt):
                         chat_history.append(
                             {"role": "user", "content": user_message["full"]})
                         conversation.append(
-                            {"customer support agent": user_message["full"]})
+                            {"role": "agent", "content": user_message["log"]})
                         continue
                     num += 1
                     response = openai.chat.completions.create(
@@ -92,14 +92,15 @@ async def test_bot(uri, n, user_prompt):
                     assistant_response = response.choices[0].message.content
                     chat_history.append(
                         {"role": "assistant", "content": assistant_response})
-                    conversation.append({"customer": assistant_response})
+                    conversation.append(
+                        {"role": "customer", "content": assistant_response})
                     await websocket.send(json.dumps({'text': assistant_response}))
 
                     user_message = await collect_complete_message(websocket)
                     chat_history.append(
                         {"role": "user", "content": user_message["full"]})
                     conversation.append(
-                        {"customer support agent": user_message["full"]})
+                        {"role": "agent", "content": user_message["log"]})
 
                     if is_failure_response(user_message["log"]):
                         print(
@@ -107,7 +108,7 @@ async def test_bot(uri, n, user_prompt):
                         data_collect.append(
                             {'attempt': num, 'message': user_message["log"]})
                         break
-                conversations.append(chat_history)
+                conversations.append(conversation)
 
         except asyncio.TimeoutError:
             print(f"Connection to {uri} timed out")
