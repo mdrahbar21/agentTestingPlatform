@@ -7,16 +7,18 @@
   </head>
   <body>
     <h1>Test Results</h1>
-    {% if results %}
+    {% if test_result %}
     <div>
       <h2>
-        Test conducted by {{ results[0].agent_name }} at {{ results[0].timestamp
-        }}
+        Test conducted by {{ test_result['agent_name'] }} at {{
+        test_result['timestamp'] }}
       </h2>
-      {% for conversation in results[0].conversations %}
+      {% for conversation in test_result['conversations'] %}
       <ul>
-        {% for message in conversation.conversation %}
-        <li><strong>{{ message.role }}:</strong> {{ message.content }}</li>
+        {% for message in conversation['conversation'] %}
+        <li>
+          <strong>{{ message['role'] }}:</strong> {{ message['content'] }}
+        </li>
         {% endfor %}
       </ul>
       {% endfor %}

@@ -129,21 +129,18 @@ def singleTest():
             single_message_test_bot(uri, test_count, input_message))
         loop.close()
 
-        # Prepare the document to insert into MongoDB
         document = {
             "agent_name": agent_name,
             "input_message": input_message,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "conversations": results  # All results are stored under one array
+            "conversations": results  # Results is a list of conversations
         }
 
-        # Insert the document into MongoDB
         insert_result = mongo.db.single_conversation.insert_one(document)
+        test_result_document = mongo.db.single_conversation.find_one(
+            {"_id": insert_result.inserted_id})
 
-        # Optionally, pass the ID of the inserted document to the template
-        document_id = insert_result.inserted_id
-
-        return render_template('result_single.html', results=results, document_id=document_id)
+        return render_template('result_single.html', test_result=test_result_document)
 
     return render_template('singleTest.html')
 
