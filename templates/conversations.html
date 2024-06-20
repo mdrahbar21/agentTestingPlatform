@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversation Logs</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f4f9;
+        color: #333;
+      }
+      .message {
+        background-color: #f8f9fa;
+        border-left: 3px solid #007bff;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #555;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      li {
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #e9e9ef;
+        border-radius: 4px;
+      }
+      hr {
+        display: block;
+        height: 3px;
+        border: 2;
+        border-top: 2px solid red;
+        margin: 1em 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Conversation Logs</h1>
+      {% if conversations %}
+      <div class="list-group">
+        <ul>
+          {% for conversation in conversations %}
+          <li class="card card-body mb-3">
+            <h5 class="card-title">
+              Conversation ID: {{ conversation._id }}
+              <a
+                href="{{ url_for('evaluate') }}?conversation_id={{ conversation._id }}"
+                class="btn btn-primary btn-sm float-right"
+                >Evaluate</a
+              >
+            </h5>
+            <p class="text-right">
+              Conversation on <strong>{{ conversation.timestamp }}</strong>
+            </p>
+            <p><strong>Agent Used:</strong> {{conversation.agent_name}}</p>
+            <p><strong>User Prompt:</strong> {{conversation.user_prompt}}</p>
+            {% for message in conversation.conversation %}
+            <div class="message">
+              <strong>{{ message.role }}:</strong> {{ message.content }}
+            </div>
+            {% endfor %}
+          </li>
+          <hr />
+          {% endfor %}
+        </ul>
+      </div>
+      {% else %}
+      <p>No conversations found.</p>
+      {% endif %}
+    </div>
+  </body>
+</html>

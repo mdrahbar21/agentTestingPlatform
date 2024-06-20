@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversation Results</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      .container {
+        margin-top: 20px;
+      }
+      .message {
+        background-color: #f8f9fa;
+        border-left: 3px solid #007bff;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Generated Conversations</h1>
+      {% if results %} {% for conversation in results %}
+      <div class="card card-body mb-3">
+        <h5 class="card-title">
+          Conversation ID: {{ conversation._id }}
+          <a
+            href="{{ url_for('evaluate') }}?conversation_id={{ conversation._id }}"
+            class="btn btn-primary btn-sm float-right"
+            >Evaluate</a
+          >
+        </h5>
+
+        {% for message in conversation.conversation %}
+        <div class="message">
+          <strong>{{ message.role }}:</strong> {{ message.content }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %} {% else %}
+      <p>No conversations found.</p>
+      {% endif %}
+    </div>
+  </body>
+</html>

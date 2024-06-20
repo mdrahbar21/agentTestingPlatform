@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Test Interface</title>
+  </head>
+  <body>
+    <h1>WebSocket Test Setup</h1>
+    <p>
+      before starting test, make sure that
+      <a href="https://hoomanlabs.com/demo">https://hoomanlabs.com/demo</a> is
+      connected somewhere
+    </p>
+
+    <form method="post">
+      <label for="agent_name">Agent Name: </label>
+      <input type="text" id="agent_name" name="agent_name" required /><br />
+
+      <label for="test_count">Number of Conversations: </label>
+      <input type="number" id="test_count" name="test_count" required /><br />
+
+      <label for="user_prompt">User Prompt: </label>
+      <textarea id="user_prompt" name="user_prompt" required></textarea><br />
+
+      <button type="submit">Start Test</button>
+      <p>Wait for sometime after clicking on start button</p>
+    </form>
+    <div>
+      <h2>Test Results</h2>
+      <ul>
+        {% for result in results %}
+        <li>
+          <strong>Attempt:</strong> {{ result.get('attempt', 'Evaluation') }}<br />
+          <strong>Message:</strong> {{ result.get('message',
+          result.get('evaluation', 'No data')) }}
+        </li>
+        {% endfor %}
+      </ul>
+      <button>
+        <a href="/">Back to Home</a>
+      </button>
+      <button>
+        <a href="/conversations">View Conversations</a>
+      </button>
+    </div>
+    <div>
+      <h2>Example</h2>
+      <p>Agent Name: giva_order_tracking_v2</p>
+      <p>Number of Tests: 1</p>
+      <p>
+        System Prompt 1: Your main job is to talk to a customer service agent
+        over a phone call and get updates on your order. Your responses must be
+        concise. You are a regular customer so use casual and friendly tone. You
+        do not have the tracking number or any other details. You need to get
+        your order tracked using your registered phone number. You should let
+        the agent lead the conversation. Your registered phone number is
+        8668344178. You are making these calls from your work number and not
+        your registered number.
+      </p>
+    </div>
+  </body>
+</html>

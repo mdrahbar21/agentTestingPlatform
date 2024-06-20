@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evaluation Result</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      pre {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 10px;
+        white-space: pre-wrap; /* Ensures preformatted text is wrapped */
+      }
+      .message {
+        background-color: #f8f9fa;
+        border-left: 3px solid #007bff;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+      hr {
+        display: block;
+        height: 3px;
+        border: 2;
+        border-top: 2px solid red;
+        margin: 1em 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Evaluation Results</h1>
+      {% for conversation, result in results %}
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Conversation ID: {{ conversation._id }}</h5>
+          <p class="text-right">
+            Conversation Transcript on {{ conversation.timestamp }}:
+          </p>
+          <p><strong>Agent Used:</strong> {{conversation.agent_name}}</p>
+          <p><strong>User Prompt:</strong> {{conversation.user_prompt}}</p>
+          <div class="list-group">
+            <ul>
+              {% for message in conversation.conversation %}
+              <div class="message">
+                <strong>{{ message.role }}:</strong> {{ message.content }}
+              </div>
+              {% endfor %}
+            </ul>
+          </div>
+          <!-- Loop through each evaluation stored in the conversation -->
+          {% if conversation.evaluations %} {% for eval in
+          conversation.evaluations|reverse %}
+          <div class="card mt-3">
+            <div class="card-body">
+              <h5 class="card-title">Evaluation on {{ eval.date }}</h5>
+              <p>
+                <strong>Evaluator Prompt:</strong> {{ eval.evaluator_prompt }}
+              </p>
+              <h6>Result:</h6>
+              <pre class="card-text">{{ eval.result }}</pre>
+            </div>
+          </div>
+
+          {% endfor %} {% else %}
+          <p>No evaluations available.</p>
+          {% endif %}
+        </div>
+      </div>
+      <hr />
+      {% endfor %}
+      <a href="/evaluate" class="btn btn-link">Evaluate another conversation</a>
+    </div>
+  </body>
+</html>
