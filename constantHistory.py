@@ -8,10 +8,12 @@ import datetime
 load_dotenv()
 
 
-async def single_message_test_bot(uri, test_count, input_message, user_prompt,history ):
+async def single_message_test_bot(uri, test_count, input_message, history ):
     user_interactions = [
         {'text': input_message}
     ]
+    chat_history=[ ]
+    chat_history.update(history)
     data_collect = []
 
     for test_num in range(test_count):

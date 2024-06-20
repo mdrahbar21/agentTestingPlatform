@@ -3,9 +3,9 @@
 __pycache__
 /__pycache__
 /__pycache__/*
-botEvaluator
-/botEvaluator
-/botEvaluator/*
-botEvaluator/*
+agentVenv
+/agentVenv
+/agentVenv/*
+agentVenv/*
 
 /.env
