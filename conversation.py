@@ -3,7 +3,6 @@ import websockets
 import openai
 import json
 from flask import session
-from evaluator import evaluate_response
 import os
 from datetime import datetime
 from dotenv import load_dotenv
@@ -62,7 +61,12 @@ async def test_bot(uri, n, user_prompt):
         num = 0
         try:
             async with websockets.connect(uri, timeout=10) as websocket:
-                user_message = await collect_complete_message(websocket)
+                if websocket.open:
+                    user_message = await collect_complete_message(websocket)
+                elif not websocket.open:
+                    conversation.append(
+                        {"role": "error", "content": "websocket closed abruptly"})
+                    break
 
                 if user_message["session_end"] or 'Goodbye' in user_message["full"] or 'Have a fantastic day' in user_message["full"]:
                     print("Connection closing triggered.")
@@ -75,7 +79,7 @@ async def test_bot(uri, n, user_prompt):
 
                 assistant_response = ''
 
-                while 'Goodbye' not in assistant_response and 'Have a fantastic day' not in assistant_response:
+                while 'Goodbye' not in assistant_response and 'Have a fantastic day' not in assistant_response and websocket.open:
                     if "please wait" in user_message["log"].strip().lower():
                         user_message = await collect_complete_message(websocket)
                         chat_history.append(
@@ -95,8 +99,12 @@ async def test_bot(uri, n, user_prompt):
                     conversation.append(
                         {"role": "customer", "content": assistant_response})
                     await websocket.send(json.dumps({'text': assistant_response}))
-
-                    user_message = await collect_complete_message(websocket)
+                    if websocket.open:
+                        user_message = await collect_complete_message(websocket)
+                    elif not websocket.open:
+                        conversation.append(
+                            {"role": "error", "content": "websocket closed abruptly"})
+                        break
                     chat_history.append(
                         {"role": "user", "content": user_message["full"]})
                     conversation.append(
@@ -114,6 +122,9 @@ async def test_bot(uri, n, user_prompt):
             print(f"Connection to {uri} timed out")
         except websockets.exceptions.ConnectionClosed as e:
             print(f"WebSocket connection was closed: {str(e)}")
+        finally:
+            if not websocket.closed:
+                await websocket.close()
 
         if not websocket.closed:
             await websocket.close()

@@ -32,4 +32,5 @@ async def evaluate_response(conversation, assistant_used_prompt, evaluator_promp
         return content_to_write
     except Exception as e:
         print("Failed to get response from OpenAI:", e)
-        return 'API call failed'
+        error = "Failed to get response from OpenAI:" + str(e)
+        return error

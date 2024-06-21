@@ -69,16 +69,16 @@ def evaluate():
             )
             assistant_used_prompt = request.form['assistant_used_prompt']
             evaluator_prompt = request.form['evaluator_prompt']
+            convo = conversation['conversation']
 
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             result = loop.run_until_complete(
                 evaluate_response(
-                    conversation, assistant_used_prompt, evaluator_prompt)
+                    convo, assistant_used_prompt, evaluator_prompt)
             )
             loop.close()
 
-            # Prepare the evaluation data
             evaluation_data = {
                 'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 'assistant_used_prompt': assistant_used_prompt,
@@ -86,13 +86,11 @@ def evaluate():
                 'result': result
             }
 
-            # Update the MongoDB document to append the new evaluation
             mongo.db.conversations.update_one(
                 {'_id': ObjectId(conversation_id)},
                 {'$push': {'evaluations': evaluation_data}}
             )
 
-            # Refresh the conversation object with the new evaluation
             conversation = mongo.db.conversations.find_one(
                 {'_id': ObjectId(conversation_id)}
             )
@@ -110,7 +108,6 @@ def evaluate():
 @app.route('/conversations', methods=['GET'])
 def results():
     conversations = mongo.db.conversations.find().sort('timestamp', -1)
-    # Convert from Cursor to a list of dicts
     conversations_list = [conv for conv in conversations]
     return render_template('conversations.html', conversations=conversations_list)
 
@@ -133,7 +130,7 @@ def singleTest():
             "agent_name": agent_name,
             "input_message": input_message,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "conversations": results  # Results is a list of conversations
+            "conversations": results
         }
 
         insert_result = mongo.db.single_conversation.insert_one(document)

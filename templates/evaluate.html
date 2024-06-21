@@ -15,14 +15,29 @@
       <form method="POST" action="/evaluate">
         <div class="form-group">
           <label for="conversation_id">Select Conversation:</label>
-          <select class="form-control" id="conversation_id" name="conversation_id" required multiple>
+          <select
+            class="form-control"
+            id="conversation_id"
+            name="conversation_id"
+            required
+            multiple
+          >
             {% for conversation in conversations %}
-              <option value="{{ conversation._id }}" 
-                {% if conversation._id|string in selected_conversation_ids %}selected{% endif %}>
-                {{ conversation._id }}
-              </option>
+            <option
+              value="{{ conversation._id }}"
+              {%
+              if
+              conversation._id|string
+              in
+              selected_conversation_ids
+              %}selected{%
+              endif
+              %}
+            >
+              {{ conversation._id }}
+            </option>
             {% endfor %}
-          </select>       
+          </select>
         </div>
         <div class="form-group">
           <label for="assistant_used_prompt">Assistant Used Prompt:</label>
@@ -143,10 +158,13 @@
       </p>
       <p>
         <strong>Evaluator Prompt:</strong> You are an expert call evaluator. You
-        will be given a transcript of a call and the system prompt of the AI
-        participant. Determine if the call was successful based on the
-        objectives inferred from the system prompt and give the following
-        evaluations: \ Checklist: A checklist of criteria and their status.
+        will be given a transcript of a call with roles of the both customer and
+        agent and the system prompt of the AI participant. Determine if the call
+        was successful based on the objectives inferred from the system prompt,
+        determine whether agent did the job well, or if the agent stopped
+        answering then also evaluate the call as failed call and give the
+        following evaluations: \ Checklist: A checklist of criteria and their
+        status.
       </p>
     </div>
   </body>
