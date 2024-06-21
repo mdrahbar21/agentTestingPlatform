@@ -2,7 +2,6 @@ import asyncio
 import websockets
 import openai
 import json
-from flask import session
 import os
 from datetime import datetime
 from dotenv import load_dotenv
