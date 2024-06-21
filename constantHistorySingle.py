@@ -125,20 +125,7 @@ def llm_assistant(chat_history):
         return None
 
 
-def llm_user(chat_history):
-    try:
-        response = openai.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=chat_history,
-            temperature=1,
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        print(f"Error during LLM user response generation: {e}")
-        return None
-
-
-def converse2():
+def converse3(test_count):
     voice_test_prompt = "## Identity You are Susan, a voice assistant working at the new appointments desk of City Hospital. You are a friendly, professional, and patient-centric assistant.  \
         ## Role Your main task is to help users book new appointments over a phone conversation using the “New Appointment Guide”. You must keep track of conversation history and collect all the required details in a friendly and efficient manner. \
         Avoid asking for the details which the user has already provided.   Additionally you may use your medical knowledge to understand user messages but never give medical advice.  ### Address:  4th Main, Indiranagar, Bangalore, India. \
@@ -161,89 +148,23 @@ def converse2():
         ### Case 1: User gave a preferred date or date-range and asked for available slots - Consider user provided date/day or start of date-range as start date. - Use the end date only when the user provides a date range with a clear and specific end date. \
         - Make sure that the startDate and endDate are exactly in the same form as shared by the user. For example:   - If the user said “tomorrow” then startDate = “tomorrow”, endDate = “”   - If the user said “26th” then startDate = “26th”, endDate = “”   - If the user said “26th june” then startDate = “26th june”, endDate = “”   - If the user said “next week” then startDate = “next week”, endDate = “”   - If the user said “between 3rd and 7th” then startDate = “3rd”, endDate = “7th” - If the user has provided a time-range,   - Interpret and convert time-range to appropriate 12-hour AM/PM value. For example:     - If the user said “morning” then startTime = “09:00 AM”, endTime = “12:00 PM”     - If the user said “after 2” then startTime = “02:00 PM”, endTime = “08:00 PM” (end of working hours)     - If the user said “between 3 and 5” then startTime = “03:00 PM”, endTime = “05:00 PM” - Check availability by calling get_slots_date function with appropriate startDate, startTime, endTime, and endDate (optional). - If the user has not provided a time-range then check availability by calling get_slots_date function with appropriate startDate and endDate (optional).  ### Case 2: User gave no preferred date or date-range and asked for available slots Check availability by calling get_slots function.  Once you have the available slots, ask the user to select their preferred slot and then proceed appropriately. If there are multiple available slot options, use conjunctions between each of them to ensure fluidity. Remember your response is being delivered over the phone."
 
-    user_prompt = "Your name is Rahbar. You are a patient, looking to book an appointment at city hospital over a phone call. Your job is to interact with the receptionist, provide necessary information and ensure clear communication. Here are some details about you: Email: rahbar@hoomanlabs.com Age: 21 Gender: Male - Remember this is a phone conversation so keep your responses short (under 1-2 sentences) and to-the-point. - Also, when receptionist asks for your preferred date and time, provide a specific date and time in the future"
-    chat_history_assistant = [
-        {"role": "system", "content": voice_test_prompt}]
-    chat_history_user = [
-        {"role": "system", "content": user_prompt}]
+    base_chat_history = [
+        {"role": "system", "content": voice_test_prompt},
+        {"role": "assistant", "content": "Thank you for calling City Hospital. This is Susan from the appointments department. How may I assist you today?"},
+        {"role": "user", "content": " Hello Susan, I would like to book an appointment with a doctor at City Hospital"},
+        {"role": "assistant", "content": "Sure, I can help you with that. Let's start by getting some details from you. Could you please tell me your name?"},
+        {"role": "user", "content": "My name is Rahbar and my email is rahbar@hoomanlabs.com"},
+        {"role": "assistant", "content": "Thank you, Rahbar. Can you share the purpose of your visit to the hospital?"},
+        {"role": "user", "content": "I need to see a doctor for a routine check-up."},
+        {"role": "assistant", "content": "Thank you for that. Now, please provide me with your preferred date and time for the appointment."},
+        {"role": "user", "content": "I prefer to book an appointment for Wednesday, August 25th at 10:00 AM"}
+    ]
 
-    intro_message = "Thank you for calling City Hospital. This is Susan from the appointments department. How may I assist you today?"
-    chat_history_assistant.append(
-        {"role": "assistant", "content": intro_message})
-    chat_history_user.append(
-        {"role": "user", "content": intro_message})
-    print("Assistant: "+str(intro_message))
-
-    chat_history_user.append({
-        "role": "assistant", "content": "Hello Susan, I would like to book an appointment with a doctor at City Hospital"
-    })
-    chat_history_assistant.append({
-        "role": "user",
-        "content": " Hello Susan, I would like to book an appointment with a doctor at City Hospital"
-    })
-
-    chat_history_assistant.append({
-        "role": "assistant", "content": "Sure, I can help you with that. Let's start by getting some details from you. Could you please tell me your name?"
-    })
-    chat_history_user.append({
-        "role": "user", "content": "Sure, I can help you with that. Let's start by getting some details from you. Could you please tell me your name?"
-    })
-
-    chat_history_user.append({
-        "role": "assistant", "content": "My name is Rahbar and my email is rahbar@hoomanlabs.com"
-    })
-    chat_history_assistant.append({
-        "role": "user",
-        "content": "My name is Rahbar and my email is rahbar@hoomanlabs.com"
-    })
-
-    chat_history_assistant.append({
-        "role": "assistant", "content": "Thank you, Rahbar. Can you share the purpose of your visit to the hospital?"
-    })
-    chat_history_user.append({
-        "role": "user", "content": "Thank you, Rahbar. Can you share the purpose of your visit to the hospital?"
-    })
-
-    chat_history_user.append({
-        "role": "assistant", "content": "I need to see a doctor for a routine check-up."
-    })
-    chat_history_assistant.append({
-        "role": "user",
-        "content": "I need to see a doctor for a routine check-up."
-    })
-
-    chat_history_assistant.append({
-        "role": "assistant", "content": "Thank you for that. Now, please provide me with your preferred date and time for the appointment."
-    })
-    chat_history_user.append({
-        "role": "user", "content": "Thank you for that. Now, please provide me with your preferred date and time for the appointment."
-    })
-
-    for _ in range(3):
-        user_response = llm_user(chat_history_user)
-        if user_response is None or user_response.strip() == "":
-            print("Received empty or invalid response from user.")
-            break
-
-        chat_history_user.append(
-            {"role": "assistant", "content": user_response})
-        chat_history_assistant.append({
-            "role": "user", "content": user_response
-        })
-        print("User:", user_response)
-
-        assistant_response = llm_assistant(chat_history_assistant)
+    for _ in range(test_count):
+        chat_history = base_chat_history.copy()
+        assistant_response = llm_assistant(chat_history)
         if assistant_response is None or assistant_response.strip() == "":
             print("Received empty or invalid response from assistant.")
-            break
-
-        chat_history_assistant.append(
-            {"role": "assistant", "content": assistant_response})
-        chat_history_user.append(
-            {"role": "user", "content": assistant_response})
         print("Assistant:", assistant_response)
-
-        if "goodbye" in user_response.lower() or "goodbye" in assistant_response.lower():
-            break
-
-    print("Conversation ended.")
+        if "goodbye" in assistant_response.lower():
+            print("Conversation ended.")

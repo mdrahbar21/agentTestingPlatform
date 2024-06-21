@@ -11,6 +11,9 @@ from dotenv import load_dotenv
 from conversation import test_bot
 from evaluator import evaluate_response
 from singleMessage import single_message_test_bot
+from function import llm_assistant, llm_user, converse
+from constantHistory import converse2
+from constantHistorySingle import converse3
 from bson import ObjectId
 
 
@@ -140,6 +143,53 @@ def singleTest():
         return render_template('result_single.html', test_result=test_result_document)
 
     return render_template('singleTest.html')
+
+
+@app.route('/llmconvo')
+def conversation():
+    assistant_prompt = request.args.get('assistant_prompt')
+    user_prompt = request.args.get('user_prompt')
+    chat_history_assistant = [{"role": "system", "content": assistant_prompt}]
+    chat_history_user = [{"role": "system", "content": user_prompt}]
+
+    conversation_log = []
+    for _ in range(10):
+        assistant_response = llm_assistant(chat_history_user)
+        chat_history_assistant.append(
+            {"role": "user", "content": chat_history_user[-1]['content']})
+        chat_history_assistant.append(
+            {"role": "assistant", "content": assistant_response})
+
+        user_response = llm_user(chat_history_assistant)
+        chat_history_user.append(
+            {"role": "assistant", "content": assistant_response})
+        chat_history_user.append({"role": "user", "content": user_response})
+
+        conversation_log.append(
+            {"Assistant": assistant_response, "User": user_response})
+
+        if "goodbye" in user_response.lower() or "goodbye" in assistant_response.lower():
+            break
+
+    return render_template('conversation.html', conversation_log=conversation_log)
+
+
+@app.route('/converse', methods=['GET', 'POST'])
+def handle_conversation():
+    converse()
+    return jsonify({"status": "Conversation ended successfully."})
+
+
+@app.route('/converse2', methods=['GET', 'POST'])
+def handle_conversation2():
+    converse2()
+    return jsonify({"status": "Conversation ended successfully."})
+
+
+@app.route('/converse3', methods=['GET', 'POST'])
+def handle_conversation3():
+    converse3(4)
+    return jsonify({"status": "Conversation ended successfully."})
 
 
 if __name__ == '__main__':
