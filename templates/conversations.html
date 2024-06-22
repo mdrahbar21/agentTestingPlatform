@@ -49,16 +49,43 @@
         margin: 1em 0;
         padding: 0;
       }
+      .filters {
+        margin-bottom: 20px;
+      }
+      .filters .form-control {
+        display: inline-block;
+        width: auto;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <h1>Conversation Logs</h1>
+      <div class="filters">
+        <select
+          id="agentFilter"
+          class="form-control"
+          onchange="filterConversations()"
+        >
+          <option value="">Filter by Agent</option>
+          {% set agent_names = conversations | map(attribute='agent_name') |
+          list | unique %} {% for agent_name in agent_names %}
+          <option value="{{ agent_name }}">{{ agent_name }}</option>
+          {% endfor %}
+        </select>
+        <input
+          type="text"
+          id="timestampFilter"
+          class="form-control"
+          placeholder="Filter by Timestamp"
+          onkeyup="filterConversations()"
+        />
+      </div>
       {% if conversations %}
-      <div class="list-group">
+      <div class="list-group" id="conversationList">
         <ul>
           {% for conversation in conversations %}
-          <li class="card card-body mb-3">
+          <li class="card card-body mb-3 conversation-item">
             <h5 class="card-title">
               Conversation ID: {{ conversation._id }}
               <a
@@ -68,9 +95,13 @@
               >
             </h5>
             <p class="text-right">
-              Conversation on <strong>{{ conversation.timestamp }}</strong>
+              Conversation on
+              <strong class="timestamp">{{ conversation.timestamp }}</strong>
             </p>
-            <p><strong>Agent Used:</strong> {{conversation.agent_name}}</p>
+            <p>
+              <strong>Agent Used:</strong>
+              <span class="agent">{{conversation.agent_name}}</span>
+            </p>
             <p><strong>User Prompt:</strong> {{conversation.user_prompt}}</p>
             {% for message in conversation.conversation %}
             <div class="message">
@@ -86,5 +117,35 @@
       <p>No conversations found.</p>
       {% endif %}
     </div>
+    <script>
+      function filterConversations() {
+        var agentFilter = document
+          .getElementById("agentFilter")
+          .value.toLowerCase();
+        var timestampFilter = document
+          .getElementById("timestampFilter")
+          .value.toLowerCase();
+        var conversations =
+          document.getElementsByClassName("conversation-item");
+
+        for (var i = 0; i < conversations.length; i++) {
+          var agent = conversations[i]
+            .getElementsByClassName("agent")[0]
+            .innerText.toLowerCase();
+          var timestamp = conversations[i]
+            .getElementsByClassName("timestamp")[0]
+            .innerText.toLowerCase();
+
+          if (
+            (agent.includes(agentFilter) || agentFilter === "") &&
+            timestamp.includes(timestampFilter)
+          ) {
+            conversations[i].style.display = "";
+          } else {
+            conversations[i].style.display = "none";
+          }
+        }
+      }
+    </script>
   </body>
 </html>

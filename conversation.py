@@ -25,7 +25,7 @@ async def collect_complete_message(websocket):
     start_time = asyncio.get_event_loop().time()
     while True:
         elapsed_time = asyncio.get_event_loop().time() - start_time
-        remaining_time = 6 - elapsed_time
+        remaining_time = 10 - elapsed_time
         if remaining_time <= 0:
             print("Message collection timed out.")
             break
@@ -62,12 +62,12 @@ async def test_bot(uri, n, user_prompt):
             async with websockets.connect(uri, timeout=10) as websocket:
                 if websocket.open:
                     user_message = await collect_complete_message(websocket)
-                elif not websocket.open:
+                if not websocket.open:
                     conversation.append(
                         {"role": "error", "content": "websocket closed abruptly"})
                     break
 
-                if user_message["session_end"] or 'Goodbye' in user_message["full"] or 'Have a fantastic day' in user_message["full"]:
+                if user_message["session_end"] or 'Goodbye' in user_message["full"] or 'Have a fantastic day' in user_message["full"] or 'शुभकामनाएं' in user_message['full'] or 'शुभ हो' in user_message['full'] or 'बहुत धन्यवाद' in user_message['full'] or 'जय हिन्द' in user_message['full']:
                     print("Connection closing triggered.")
                     break
 
@@ -78,7 +78,7 @@ async def test_bot(uri, n, user_prompt):
 
                 assistant_response = ''
 
-                while 'Goodbye' not in assistant_response and 'Have a fantastic day' not in assistant_response and websocket.open:
+                while 'Goodbye' not in assistant_response and websocket.open and 'Have a fantastic day' not in assistant_response and 'शुभकामनाएं' not in assistant_response:
                     if "please wait" in user_message["log"].strip().lower():
                         user_message = await collect_complete_message(websocket)
                         chat_history.append(
@@ -100,7 +100,7 @@ async def test_bot(uri, n, user_prompt):
                     await websocket.send(json.dumps({'text': assistant_response}))
                     if websocket.open:
                         user_message = await collect_complete_message(websocket)
-                    elif not websocket.open:
+                    if not websocket.open:
                         conversation.append(
                             {"role": "error", "content": "websocket closed abruptly"})
                         break
@@ -121,12 +121,6 @@ async def test_bot(uri, n, user_prompt):
             print(f"Connection to {uri} timed out")
         except websockets.exceptions.ConnectionClosed as e:
             print(f"WebSocket connection was closed: {str(e)}")
-        finally:
-            if not websocket.closed:
-                await websocket.close()
-
-        if not websocket.closed:
-            await websocket.close()
 
     for convo in conversations:
         data_collect.append({
