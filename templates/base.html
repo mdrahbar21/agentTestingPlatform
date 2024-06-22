@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}My Flask App{% endblock %}</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      .container {
+        margin-top: 20px;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f4f9;
+        color: #333;
+      }
+      .message {
+        background-color: #f8f9fa;
+        border-left: 3px solid #007bff;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #555;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      li {
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #e9e9ef;
+        border-radius: 4px;
+      }
+      hr {
+        display: block;
+        height: 3px;
+        border: 2;
+        border-top: 2px solid red;
+        margin: 1em 0;
+        padding: 0;
+      }
+      .filters {
+        margin-bottom: 20px;
+      }
+      .filters .form-control {
+        display: inline-block;
+        width: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="{{ url_for('index') }}">My Flask App</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('results') }}"
+              >Conversations</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('singleTest') }}"
+              >Single Test</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('evaluate') }}">Evaluate</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container">{% block content %}{% endblock %}</div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+      function filterConversations() {
+        var agentFilter = document
+          .getElementById("agentFilter")
+          .value.toLowerCase();
+        var timestampFilter = document
+          .getElementById("timestampFilter")
+          .value.toLowerCase();
+        var afterDateTimeFilter = document.getElementById(
+          "afterDateTimeFilter"
+        ).value;
+        var beforeDateTimeFilter = document.getElementById(
+          "beforeDateTimeFilter"
+        ).value;
+        var agentMessageComparison = document.getElementById(
+          "agentMessageComparison"
+        ).value;
+        var agentMessageCountFilter = document.getElementById(
+          "agentMessageCountFilter"
+        ).value;
+        var customerMessageComparison = document.getElementById(
+          "customerMessageComparison"
+        ).value;
+        var customerMessageCountFilter = document.getElementById(
+          "customerMessageCountFilter"
+        ).value;
+        var conversations =
+          document.getElementsByClassName("conversation-item");
+        var count = 0;
+
+        for (var i = 0; i < conversations.length; i++) {
+          var agent = conversations[i]
+            .getElementsByClassName("agent")[0]
+            .innerText.toLowerCase();
+          var timestamp = conversations[i]
+            .getElementsByClassName("timestamp")[0]
+            .innerText.toLowerCase();
+          var conversationTimestamp = new Date(
+            conversations[i].getElementsByClassName("timestamp")[0].innerText
+          );
+          var agentMessageCount = parseInt(
+            conversations[i].getElementsByClassName("agent-message-count")[0]
+              .innerText
+          );
+          var customerMessageCount = parseInt(
+            conversations[i].getElementsByClassName("customer-message-count")[0]
+              .innerText
+          );
+
+          var agentMessageCountMatch =
+            agentMessageComparison === "gt"
+              ? agentMessageCount > agentMessageCountFilter
+              : agentMessageCount < agentMessageCountFilter;
+          var customerMessageCountMatch =
+            customerMessageComparison === "gt"
+              ? customerMessageCount > customerMessageCountFilter
+              : customerMessageCount < customerMessageCountFilter;
+
+          var afterDateMatch =
+            afterDateTimeFilter === "" ||
+            conversationTimestamp >= new Date(afterDateTimeFilter);
+          var beforeDateMatch =
+            beforeDateTimeFilter === "" ||
+            conversationTimestamp <= new Date(beforeDateTimeFilter);
+
+          if (
+            (agent === agentFilter || agentFilter === "") &&
+            timestamp.includes(timestampFilter) &&
+            (agentMessageCountFilter === "" || agentMessageCountMatch) &&
+            (customerMessageCountFilter === "" || customerMessageCountMatch) &&
+            afterDateMatch &&
+            beforeDateMatch
+          ) {
+            conversations[i].style.display = "";
+            count++;
+          } else {
+            conversations[i].style.display = "none";
+          }
+        }
+
+        document.getElementById("conversationCount").innerText = count;
+      }
+
+      function toggleDetails(button) {
+        var detailsDiv = button
+          .closest("li")
+          .getElementsByClassName("conversation-details")[0];
+        if (detailsDiv.style.display === "none") {
+          detailsDiv.style.display = "block";
+          button.textContent = "Hide Details";
+        } else {
+          detailsDiv.style.display = "none";
+          button.textContent = "Show Details";
+        }
+      }
+    </script>
+  </body>
+</html>

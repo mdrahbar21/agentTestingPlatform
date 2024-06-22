@@ -1,151 +1,235 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Conversation Logs</title>
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+{% extends "base.html" %} {% block title %}Conversation Logs - My Flask App{%
+endblock %} {% block content %}
+<h1>Conversation Logs</h1>
+<div class="filters">
+  <select
+    id="agentFilter"
+    class="form-control"
+    onchange="filterConversations()"
+  >
+    <option value="">Filter by Agent</option>
+    {% set agent_names = conversations | map(attribute='agent_name') | list |
+    unique %} {% for agent_name in agent_names %}
+    <option value="{{ agent_name }}">{{ agent_name }}</option>
+    {% endfor %}
+  </select>
+  <input
+    type="text"
+    id="timestampFilter"
+    class="form-control"
+    placeholder="Filter by Timestamp (e.g., 2023-01-01 12:00:00)"
+    onkeyup="filterConversations()"
+  />
+
+  <div class="form-inline">
+    <input
+      type="datetime-local"
+      id="afterDateTimeFilter"
+      class="form-control"
+      placeholder="After Date and Time"
+      onchange="filterConversations()"
     />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        background-color: #f4f4f9;
-        color: #333;
-      }
-      .message {
-        background-color: #f8f9fa;
-        border-left: 3px solid #007bff;
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-      }
-      .container {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      h1 {
-        color: #555;
-      }
-      ul {
-        list-style-type: none;
-        padding: 0;
-      }
-      li {
-        margin: 10px 0;
-        padding: 10px;
-        background-color: #e9e9ef;
-        border-radius: 4px;
-      }
-      hr {
-        display: block;
-        height: 3px;
-        border: 2;
-        border-top: 2px solid red;
-        margin: 1em 0;
-        padding: 0;
-      }
-      .filters {
-        margin-bottom: 20px;
-      }
-      .filters .form-control {
-        display: inline-block;
-        width: auto;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>Conversation Logs</h1>
-      <div class="filters">
-        <select
-          id="agentFilter"
-          class="form-control"
-          onchange="filterConversations()"
+    <input
+      type="datetime-local"
+      id="beforeDateTimeFilter"
+      class="form-control"
+      placeholder="Before Date and Time"
+      onchange="filterConversations()"
+    />
+  </div>
+
+  <div class="form-inline">
+    <select
+      id="agentMessageComparison"
+      class="form-control"
+      onchange="filterConversations()"
+    >
+      <option value="gt">Greater than</option>
+      <option value="lt">Less than</option>
+    </select>
+    <input
+      type="number"
+      id="agentMessageCountFilter"
+      class="form-control"
+      placeholder="Agent Message Count"
+      onkeyup="filterConversations()"
+    />
+  </div>
+
+  <div class="form-inline">
+    <select
+      id="customerMessageComparison"
+      class="form-control"
+      onchange="filterConversations()"
+    >
+      <option value="gt">Greater than</option>
+      <option value="lt">Less than</option>
+    </select>
+    <input
+      type="number"
+      id="customerMessageCountFilter"
+      class="form-control"
+      placeholder="Customer Message Count"
+      onkeyup="filterConversations()"
+    />
+  </div>
+</div>
+
+<div>
+  <h2>Filtered Conversations: <span id="conversationCount">0</span></h2>
+</div>
+
+{% if conversations %}
+<div class="list-group" id="conversationList">
+  <ul>
+    {% for conversation in conversations %} {% set agent_message_count =
+    conversation.conversation | selectattr('role', 'equalto', 'agent') | list |
+    length %} {% set customer_message_count = conversation.conversation |
+    selectattr('role', 'equalto', 'customer') | list | length %}
+    <li class="card card-body mb-3 conversation-item">
+      <h5 class="card-title">
+        Conversation ID: {{ conversation._id }}
+        <a
+          href="{{ url_for('evaluate') }}?conversation_id={{ conversation._id }}"
+          class="btn btn-primary btn-sm float-right"
+          >Evaluate</a
         >
-          <option value="">Filter by Agent</option>
-          {% set agent_names = conversations | map(attribute='agent_name') |
-          list | unique %} {% for agent_name in agent_names %}
-          <option value="{{ agent_name }}">{{ agent_name }}</option>
-          {% endfor %}
-        </select>
-        <input
-          type="text"
-          id="timestampFilter"
-          class="form-control"
-          placeholder="Filter by Timestamp"
-          onkeyup="filterConversations()"
-        />
+        <button
+          type="button"
+          class="btn btn-info btn-sm float-right mr-2"
+          onclick="toggleDetails(this)"
+        >
+          Show Details
+        </button>
+      </h5>
+      <div class="conversation-header">
+        <p class="text-right">
+          <strong class="timestamp">{{ conversation.timestamp }}</strong>
+        </p>
+        <p>
+          <strong>Agent Used:</strong>
+          <span class="agent">{{ conversation.agent_name }}</span>
+        </p>
+        <p>
+          <strong>Agent Messages:</strong>
+          <span class="agent-message-count">{{ agent_message_count }}</span>
+        </p>
+        <p>
+          <strong>Customer Messages:</strong>
+          <span class="customer-message-count"
+            >{{ customer_message_count }}</span
+          >
+        </p>
       </div>
-      {% if conversations %}
-      <div class="list-group" id="conversationList">
-        <ul>
-          {% for conversation in conversations %}
-          <li class="card card-body mb-3 conversation-item">
-            <h5 class="card-title">
-              Conversation ID: {{ conversation._id }}
-              <a
-                href="{{ url_for('evaluate') }}?conversation_id={{ conversation._id }}"
-                class="btn btn-primary btn-sm float-right"
-                >Evaluate</a
-              >
-            </h5>
-            <p class="text-right">
-              Conversation on
-              <strong class="timestamp">{{ conversation.timestamp }}</strong>
-            </p>
-            <p>
-              <strong>Agent Used:</strong>
-              <span class="agent">{{conversation.agent_name}}</span>
-            </p>
-            <p><strong>User Prompt:</strong> {{conversation.user_prompt}}</p>
-            {% for message in conversation.conversation %}
-            <div class="message">
-              <strong>{{ message.role }}:</strong> {{ message.content }}
-            </div>
-            {% endfor %}
-          </li>
-          <hr />
-          {% endfor %}
-        </ul>
+      <div class="conversation-details" style="display: none">
+        <p><strong>User Prompt:</strong> {{ conversation.user_prompt }}</p>
+        {% for message in conversation.conversation %}
+        <div class="message">
+          <strong>{{ message.role }}:</strong> {{ message.content }}
+        </div>
+        {% endfor %}
       </div>
-      {% else %}
-      <p>No conversations found.</p>
-      {% endif %}
-    </div>
-    <script>
-      function filterConversations() {
-        var agentFilter = document
-          .getElementById("agentFilter")
-          .value.toLowerCase();
-        var timestampFilter = document
-          .getElementById("timestampFilter")
-          .value.toLowerCase();
-        var conversations =
-          document.getElementsByClassName("conversation-item");
+    </li>
+    <hr />
+    {% endfor %}
+  </ul>
+</div>
+{% else %}
+<p>No conversations found.</p>
+{% endif %} {% endblock %}
 
-        for (var i = 0; i < conversations.length; i++) {
-          var agent = conversations[i]
-            .getElementsByClassName("agent")[0]
-            .innerText.toLowerCase();
-          var timestamp = conversations[i]
-            .getElementsByClassName("timestamp")[0]
-            .innerText.toLowerCase();
+<script>
+  function filterConversations() {
+    var agentFilter = document
+      .getElementById("agentFilter")
+      .value.toLowerCase();
+    var timestampFilter = document
+      .getElementById("timestampFilter")
+      .value.toLowerCase();
+    var afterDateTimeFilter = document.getElementById(
+      "afterDateTimeFilter"
+    ).value;
+    var beforeDateTimeFilter = document.getElementById(
+      "beforeDateTimeFilter"
+    ).value;
+    var agentMessageComparison = document.getElementById(
+      "agentMessageComparison"
+    ).value;
+    var agentMessageCountFilter = document.getElementById(
+      "agentMessageCountFilter"
+    ).value;
+    var customerMessageComparison = document.getElementById(
+      "customerMessageComparison"
+    ).value;
+    var customerMessageCountFilter = document.getElementById(
+      "customerMessageCountFilter"
+    ).value;
+    var conversations = document.getElementsByClassName("conversation-item");
+    var count = 0;
 
-          if (
-            (agent.includes(agentFilter) || agentFilter === "") &&
-            timestamp.includes(timestampFilter)
-          ) {
-            conversations[i].style.display = "";
-          } else {
-            conversations[i].style.display = "none";
-          }
-        }
+    for (var i = 0; i < conversations.length; i++) {
+      var agent = conversations[i]
+        .getElementsByClassName("agent")[0]
+        .innerText.toLowerCase();
+      var timestamp = conversations[i]
+        .getElementsByClassName("timestamp")[0]
+        .innerText.toLowerCase();
+      var conversationTimestamp = new Date(
+        conversations[i].getElementsByClassName("timestamp")[0].innerText
+      );
+      var agentMessageCount = parseInt(
+        conversations[i].getElementsByClassName("agent-message-count")[0]
+          .innerText
+      );
+      var customerMessageCount = parseInt(
+        conversations[i].getElementsByClassName("customer-message-count")[0]
+          .innerText
+      );
+
+      var agentMessageCountMatch =
+        agentMessageComparison === "gt"
+          ? agentMessageCount > agentMessageCountFilter
+          : agentMessageCount < agentMessageCountFilter;
+      var customerMessageCountMatch =
+        customerMessageComparison === "gt"
+          ? customerMessageCount > customerMessageCountFilter
+          : customerMessageCount < customerMessageCountFilter;
+
+      var afterDateMatch =
+        afterDateTimeFilter === "" ||
+        conversationTimestamp >= new Date(afterDateTimeFilter);
+      var beforeDateMatch =
+        beforeDateTimeFilter === "" ||
+        conversationTimestamp <= new Date(beforeDateTimeFilter);
+
+      if (
+        (agent === agentFilter || agentFilter === "") &&
+        timestamp.includes(timestampFilter) &&
+        (agentMessageCountFilter === "" || agentMessageCountMatch) &&
+        (customerMessageCountFilter === "" || customerMessageCountMatch) &&
+        afterDateMatch &&
+        beforeDateMatch
+      ) {
+        conversations[i].style.display = "";
+        count++;
+      } else {
+        conversations[i].style.display = "none";
       }
-    </script>
-  </body>
-</html>
+    }
+
+    document.getElementById("conversationCount").innerText = count;
+  }
+
+  function toggleDetails(button) {
+    var detailsDiv = button
+      .closest("li")
+      .getElementsByClassName("conversation-details")[0];
+    if (detailsDiv.style.display === "none") {
+      detailsDiv.style.display = "block";
+      button.textContent = "Hide Details";
+    } else {
+      detailsDiv.style.display = "none";
+      button.textContent = "Show Details";
+    }
+  }
+</script>

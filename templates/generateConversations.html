@@ -1,63 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>WebSocket Test Interface</title>
-  </head>
-  <body>
-    <h1>WebSocket Test Setup</h1>
-    <p>
-      before starting test, make sure that
-      <a href="https://hoomanlabs.com/demo">https://hoomanlabs.com/demo</a> is
-      connected somewhere
-    </p>
+{% extends "base.html" %} {% block title %}Generate Conversations - My Flask
+App{% endblock %} {% block content %}
+<h1>WebSocket Test Setup</h1>
+<p>
+  Before starting the test, make sure that
+  <a href="https://hoomanlabs.com/demo">https://hoomanlabs.com/demo</a> is
+  connected somewhere.
+</p>
 
-    <form method="post">
-      <label for="agent_name">Agent Name: </label>
-      <input type="text" id="agent_name" name="agent_name" required /><br />
+<form method="post">
+  <div class="form-group">
+    <label for="agent_name">Agent Name: </label>
+    <input
+      type="text"
+      class="form-control"
+      id="agenyt_name"
+      name="agent_name"
+      required
+    />
+  </div>
+  <div class="form-group">
+    <label for="test_count">Number of Conversations: </label>
+    <input
+      type="number"
+      class="form-control"
+      id="test_count"
+      name="test_count"
+      required
+    />
+  </div>
+  <div class="form-group">
+    <label for="user_prompt">User Prompt: </label>
+    <textarea
+      class="form-control"
+      id="user_prompt"
+      name="user_prompt"
+      required
+    ></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Start Test</button>
+  <p>Wait for some time after clicking on the start button.</p>
+</form>
 
-      <label for="test_count">Number of Conversations: </label>
-      <input type="number" id="test_count" name="test_count" required /><br />
+{% if results %}
+<div>
+  <h2>Test Results</h2>
+  <ul class="list-group">
+    {% for result in results %}
+    <li class="list-group-item">
+      <strong>Attempt:</strong> {{ result.get('attempt', 'Evaluation') }}<br />
+      <strong>Message:</strong> {{ result.get('message',
+      result.get('evaluation', 'No data')) }}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
 
-      <label for="user_prompt">User Prompt: </label>
-      <textarea id="user_prompt" name="user_prompt" required></textarea><br />
+<div>
+  <button class="btn btn-secondary mt-3">
+    <a href="/" class="text-white">Back to Home</a>
+  </button>
+  <button class="btn btn-secondary mt-3">
+    <a href="/conversations" class="text-white">View Conversations</a>
+  </button>
+</div>
 
-      <button type="submit">Start Test</button>
-      <p>Wait for sometime after clicking on start button</p>
-    </form>
-    <div>
-      <h2>Test Results</h2>
-      <ul>
-        {% for result in results %}
-        <li>
-          <strong>Attempt:</strong> {{ result.get('attempt', 'Evaluation') }}<br />
-          <strong>Message:</strong> {{ result.get('message',
-          result.get('evaluation', 'No data')) }}
-        </li>
-        {% endfor %}
-      </ul>
-      <button>
-        <a href="/">Back to Home</a>
-      </button>
-      <button>
-        <a href="/conversations">View Conversations</a>
-      </button>
-    </div>
-    <div>
-      <h2>Example</h2>
-      <p>Agent Name: giva_order_tracking_v2</p>
-      <p>Number of Tests: 1</p>
-      <p>
-        User Prompt: Your main job is to talk to a customer service agent over a
-        phone call in Hinglish and get updates on your order. Your responses
-        must be concise. You are a regular customer so use casual and friendly
-        tone. You do not have the tracking number or any other details. You need
-        to get your order tracked using your registered phone number. You should
-        let the agent lead the conversation. Your registered phone number is
-        9391176277. You are making these calls from your work number and not
-        your registered number. After the task is fulfilled ask the customer
-        service agent to end the call.
-      </p>
-    </div>
-  </body>
-</html>
+<div class="mt-5">
+  <h2>Example</h2>
+  <p><strong>Agent Name:</strong> giva_order_tracking_v2</p>
+  <p><strong>Number of Tests:</strong> 1</p>
+  <p>
+    <strong>User Prompt:</strong> Your main job is to talk to a customer service
+    agent over a phone call in Hinglish and get updates on your order. Your
+    responses must be concise. You are a regular customer so use casual and
+    friendly tone. You do not have the tracking number or any other details. You
+    need to get your order tracked using your registered phone number. You
+    should let the agent lead the conversation. Your registered phone number is
+    9391176277. You are making these calls from your work number and not your
+    registered number. After the task is fulfilled ask the customer service
+    agent to end the call.
+  </p>
+</div>
+{% endblock %}

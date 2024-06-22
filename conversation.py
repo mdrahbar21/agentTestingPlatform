@@ -119,8 +119,17 @@ async def test_bot(uri, n, user_prompt):
 
         except asyncio.TimeoutError:
             print(f"Connection to {uri} timed out")
-        except websockets.exceptions.ConnectionClosed as e:
-            print(f"WebSocket connection was closed: {str(e)}")
+            continue  # Continue with the next iteration if there's a timeout
+        except websockets.exceptions.ConnectionClosedError as e:
+            print(f"WebSocket connection was closed with an error: {e}")
+        except websockets.exceptions.ConnectionClosedOK:
+            print("WebSocket connection was closed cleanly.")
+        finally:
+            # Close the websocket if it hasn't been closed yet
+            if not websocket.closed:
+                await websocket.close()
+                print("WebSocket has been closed.")
+        
 
     for convo in conversations:
         data_collect.append({
