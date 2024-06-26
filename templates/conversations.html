@@ -8,9 +8,8 @@ endblock %} {% block content %}
     onchange="filterConversations()"
   >
     <option value="">Filter by Agent</option>
-    {% set agent_names = conversations | map(attribute='agent_name') | list |
-    unique %} {% for agent_name in agent_names %}
-    <option value="{{ agent_name }}">{{ agent_name }}</option>
+    {% for agent in agents %}
+    <option value="{{ agent }}">{{ agent }}</option>
     {% endfor %}
   </select>
   <input
@@ -76,7 +75,10 @@ endblock %} {% block content %}
 </div>
 
 <div>
-  <h2>Filtered Conversations: <span id="conversationCount">0</span></h2>
+  <h2>
+    Filtered Conversations:
+    <span id="conversationCount">{{ conversations|length }}</span>
+  </h2>
 </div>
 
 {% if conversations %}
@@ -136,7 +138,38 @@ endblock %} {% block content %}
 </div>
 {% else %}
 <p>No conversations found.</p>
-{% endif %} {% endblock %}
+{% endif %}
+
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    {% if page > 1 %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for('results', page=page-1) }}"
+        aria-label="Previous"
+      >
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    {% endif %} {% for p in range(1, total_pages + 1) %}
+    <li class="page-item {% if p == page %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('results', page=p) }}">{{ p }}</a>
+    </li>
+    {% endfor %} {% if page < total_pages %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for('results', page=page+1) }}"
+        aria-label="Next"
+      >
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endblock %}
 
 <script>
   function filterConversations() {

@@ -3,6 +3,7 @@ import asyncio
 import websockets
 import json
 import openai
+import math
 import os
 from datetime import datetime
 from flask_pymongo import PyMongo
@@ -110,11 +111,32 @@ def evaluate():
     return render_template('evaluate.html', conversations=conversations, selected_conversation_ids=selected_conversation_ids, agents=agents)
 
 
+# @app.route('/conversations', methods=['GET'])
+# def results():
+#     conversations = mongo.db.conversations.find().sort('timestamp', -1)
+#     conversations_list = [conv for conv in conversations]
+#     return render_template('conversations.html', conversations=conversations_list)
+
+
 @app.route('/conversations', methods=['GET'])
 def results():
-    conversations = mongo.db.conversations.find().sort('timestamp', -1)
+    conversations_collection = mongo.db.conversations
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    total_conversations = conversations_collection.count_documents({})
+    total_pages = math.ceil(total_conversations / per_page)
+
+    conversations = conversations_collection.find().sort(
+        'timestamp', -1).skip((page - 1) * per_page).limit(per_page)
     conversations_list = [conv for conv in conversations]
-    return render_template('conversations.html', conversations=conversations_list)
+
+    return render_template(
+        'conversations.html',
+        conversations=conversations_list,
+        page=page,
+        total_pages=total_pages,
+        agents=fetch_agents()
+    )
 
 
 @app.route('/singleTest', methods=['GET', 'POST'])
