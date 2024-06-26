@@ -10,13 +10,11 @@ App{% endblock %} {% block content %}
 <form method="post">
   <div class="form-group">
     <label for="agent_name">Agent Name: </label>
-    <input
-      type="text"
-      class="form-control"
-      id="agenyt_name"
-      name="agent_name"
-      required
-    />
+    <select class="form-control" id="agent_name" name="agent_name" required>
+      {% for agent in agents %}
+      <option value="{{ agent }}">{{ agent }}</option>
+      {% endfor %}
+    </select>
   </div>
   <div class="form-group">
     <label for="test_count">Number of Conversations: </label>

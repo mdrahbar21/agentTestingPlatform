@@ -25,7 +25,7 @@ async def collect_complete_message(websocket):
     start_time = asyncio.get_event_loop().time()
     while True:
         elapsed_time = asyncio.get_event_loop().time() - start_time
-        remaining_time = 10 - elapsed_time
+        remaining_time = 6 - elapsed_time
         if remaining_time <= 0:
             print("Message collection timed out.")
             break
@@ -129,7 +129,6 @@ async def test_bot(uri, n, user_prompt):
             if not websocket.closed:
                 await websocket.close()
                 print("WebSocket has been closed.")
-        
 
     for convo in conversations:
         data_collect.append({

@@ -15,6 +15,7 @@ from function import llm_assistant, llm_user, converse
 from constantHistory import converse2
 from constantHistorySingle import converse3
 from bson import ObjectId
+from collections_firestore import fetch_agents, fetch_agent_system_prompt
 
 
 load_dotenv()
@@ -56,9 +57,9 @@ def index():
             uri, test_count, user_prompt, agent_name)
         mongo.db.conversations.insert_many(results)
         # print(results)
-        return render_template('results.html', results=results)
+        return render_template('results.html', agents=fetch_agents(), results=results)
 
-    return render_template('generateConversations.html')
+    return render_template('generateConversations.html', agents=fetch_agents())
 
 
 @app.route('/evaluate', methods=['GET', 'POST'])
@@ -99,13 +100,14 @@ def evaluate():
             )
 
             results.append((conversation, result))
-
-        return render_template('evaluation_result.html', results=results)
+        agents = fetch_agent_system_prompt()
+        return render_template('evaluation_result.html', agents=agents, results=results)
 
     conversations = mongo.db.conversations.find()
     conversation_id = request.args.get('conversation_id')
     selected_conversation_ids = [conversation_id] if conversation_id else []
-    return render_template('evaluate.html', conversations=conversations, selected_conversation_ids=selected_conversation_ids)
+    agents = fetch_agent_system_prompt()
+    return render_template('evaluate.html', conversations=conversations, selected_conversation_ids=selected_conversation_ids, agents=agents)
 
 
 @app.route('/conversations', methods=['GET'])
