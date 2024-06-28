@@ -24,20 +24,54 @@
   <body>
     <div class="container">
       <h1>Generated Conversations</h1>
-      {% if results %} {% for conversation in results %}
+
+      {% if results %}
+      <div class="card card-body mb-3">
+        <h5 class="card-title">Overall Averages</h5>
+        <div><strong>Average Name:</strong> {{ agent_name }}</div>
+        <div><strong>Conversation Count:</strong> {{ test_count }}</div>
+        <div>
+          <strong>Average LLM Latency:</strong> {{ overall_average_llm_latency
+          }}
+        </div>
+        <div>
+          <strong>Average Output Tokens:</strong> {{
+          overall_average_output_tokens }}
+        </div>
+        <div>
+          <strong>Average Input Tokens:</strong> {{ overall_average_input_tokens
+          }}
+        </div>
+      </div>
+
+      {% for conversation in results %}
       <div class="card card-body mb-3">
         <h5 class="card-title">
-          Conversation ID: {{ conversation._id }}
+          Conversation ID: {{ conversation.id }}
           <a
-            href="{{ url_for('evaluate') }}?conversation_id={{ conversation._id }}"
+            href="{{ url_for('evaluate') }}?conversation_id={{ conversation.id }}"
             class="btn btn-primary btn-sm float-right"
             >Evaluate</a
           >
         </h5>
 
-        {% for message in conversation.conversation %}
+        <div>
+          <strong>Average LLM Latency:</strong> {{
+          conversation.average_llm_latency }}
+        </div>
+        <div>
+          <strong>Average Output Tokens:</strong> {{
+          conversation.average_output_tokens }}
+        </div>
+        <div>
+          <strong>Average Input Tokens:</strong> {{
+          conversation.average_input_tokens }}
+        </div>
+
+        {% for transaction in conversation.transactions %}
         <div class="message">
-          <strong>{{ message.role }}:</strong> {{ message.content }}
+          <strong>Customer:</strong> {{ transaction.query }}<br />
+          <strong>Agent:</strong> {{ transaction.response }}
         </div>
         {% endfor %}
       </div>

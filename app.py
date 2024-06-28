@@ -16,7 +16,7 @@ from function import llm_assistant, llm_user, converse
 from constantHistory import converse2
 from constantHistorySingle import converse3
 from bson import ObjectId
-from collections_firestore import fetch_agents, fetch_agent_system_prompt
+from collections_firestore import fetch_agents, fetch_agent_system_prompt, fetch_conversations_analytics
 
 
 load_dotenv()
@@ -57,8 +57,37 @@ def index():
         results = run_async_function(
             uri, test_count, user_prompt, agent_name)
         mongo.db.conversations.insert_many(results)
+
+        result = fetch_conversations_analytics(agent_name, test_count)
         # print(results)
-        return render_template('results.html', agents=fetch_agents(), results=results)
+        if result:
+            total_llm_latency = sum(
+                conversation['average_llm_latency'] for conversation in result)
+            total_output_tokens = sum(
+                conversation['average_output_tokens'] for conversation in result)
+            total_input_tokens = sum(
+                conversation['average_input_tokens'] for conversation in result)
+            num_conversations = len(result)
+
+            overall_average_llm_latency = total_llm_latency / num_conversations
+            overall_average_output_tokens = total_output_tokens / num_conversations
+            overall_average_input_tokens = total_input_tokens / num_conversations
+        else:
+            overall_average_llm_latency = 0
+            overall_average_output_tokens = 0
+            overall_average_input_tokens = 0
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        analytics = {"agent_name": agent_name, "timestamp": timestamp, "conversation_count": test_count, "average_llm_latency": overall_average_llm_latency,
+                     "average_output_tokens": overall_average_output_tokens, "average_input_tokens": overall_average_input_tokens}
+        mongo.db.analytics.insert_one(analytics)
+
+        return render_template('results.html', agents=fetch_agents(), results=result,
+                               agent_name=agent_name, test_count=test_count,
+                               overall_average_llm_latency=overall_average_llm_latency,
+                               overall_average_output_tokens=overall_average_output_tokens,
+                               overall_average_input_tokens=overall_average_input_tokens)
+
+        # return render_template('results.html', agents=fetch_agents(), results=results)
 
     return render_template('generateConversations.html', agents=fetch_agents())
 
