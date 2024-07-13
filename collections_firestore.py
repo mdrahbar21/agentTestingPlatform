@@ -6,24 +6,6 @@ cred = credentials.Certificate('hooman-labs-production-1a943c82bc2f.json')
 app = firebase_admin.initialize_app(cred)
 dbf = firestore.client()
 
-
-# agents = dbf.collection("agents").stream()
-# conversations = dbf.collection("conversations").orderBy(
-#     'beginTimestamp', 'desc').where('agent', '==', 'voice-test').limit(10).stream()
-# functions = dbf.collection("functions").stream()
-# users = dbf.collection("users").stream()
-
-# for doc in agents:
-#     print(f"{doc.id} => {doc.to_dict().get('systemPrompt', '')}")
-#     break
-# for doc in functions:
-#     print(f"{doc.id} ")
-# for doc in users:
-#     print(f"{doc.id} ")
-# for doc in conversations:
-#     print(f"{doc.id}  => {doc.to_dict()}")
-#     break
-
 def fetch_conversations_analytics(agent, test_count):
     conversations_ref = dbf.collection("conversations") \
         .where('agent', '==', agent) \
